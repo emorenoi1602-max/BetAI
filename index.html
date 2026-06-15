@@ -207,6 +207,38 @@ footer a:hover{color:var(--green)}
 .apply-btn{width:100%;margin-top:.75rem;padding:.65rem;background:var(--green);color:#000;font-family:var(--display);font-weight:700;font-size:.85rem;border:none;border-radius:var(--radius);cursor:pointer;transition:all .2s}
 .apply-btn:hover{box-shadow:0 4px 20px rgba(0,232,122,.3)}
 
+/* ── PLAYER CARDS ── */
+.team-section{margin-bottom:1.5rem}
+.team-header{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.75rem}
+.team-badge{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.team-label{font-family:var(--display);font-size:1rem;font-weight:700}
+.team-sub{font-size:.75rem;color:var(--text3);font-family:var(--mono)}
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.75rem}
+.player-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .2s}
+.player-card:hover{border-color:var(--border2)}
+.player-card-header{padding:.75rem 1rem .5rem;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--border)}
+.player-pos{font-family:var(--mono);font-size:.65rem;padding:2px 7px;border-radius:3px;font-weight:600}
+.pos-fw{background:rgba(255,77,109,.15);color:var(--red)}
+.pos-mf{background:rgba(77,168,255,.15);color:var(--blue)}
+.pos-df{background:rgba(255,181,71,.15);color:var(--amber)}
+.pos-gk{background:rgba(0,232,122,.15);color:var(--green)}
+.player-name{font-family:var(--display);font-size:.9rem;font-weight:700;flex:1}
+.player-body{padding:.65rem 1rem}
+.mkt-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mkt-row:last-child{border-bottom:none}
+.mkt-name{font-size:.75rem;color:var(--text2)}
+.mkt-prob{font-family:var(--mono);font-size:.78rem;font-weight:600}
+.mkt-bar{flex:1;height:4px;background:var(--border);border-radius:2px;margin:0 .6rem;overflow:hidden}
+.mkt-fill{height:100%;border-radius:2px;transition:width .4s}
+.mkt-odd{font-family:var(--mono);font-size:.7rem;color:var(--text3);min-width:36px;text-align:right}
+.prob-high{color:var(--green)}
+.prob-mid{color:var(--amber)}
+.prob-low{color:var(--red)}
+.market-summary-box{background:var(--bg);border:1px solid rgba(0,232,122,.2);border-radius:var(--radius);padding:1rem 1.25rem;margin-top:1rem}
+.ms-title{font-family:var(--mono);font-size:.7rem;color:var(--green);letter-spacing:.08em;margin-bottom:.75rem;text-transform:uppercase}
+.ms-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.82rem}
+.ms-row:last-child{border-bottom:none}
+
 /* ── PRESET BAR ── */
 .preset-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
 .preset-header{display:flex;align-items:center;gap:1rem;margin-bottom:.75rem;flex-wrap:wrap}
@@ -332,6 +364,7 @@ footer a:hover{color:var(--green)}
       <button class="tab-btn" onclick="switchTab('bankroll',this)"><span class="tab-num">4</span>BANKROLL</button>
       <button class="tab-btn" onclick="switchTab('global',this)"><span class="tab-num">5</span>GLOBAL</button>
       <button class="tab-btn" onclick="switchTab('mercados',this)"><span class="tab-num">6</span>MERCADOS</button>
+      <button class="tab-btn" onclick="switchTab('jugadores',this)"><span class="tab-num">7</span>JUGADORES</button>
       <button class="tab-btn ai-tab-btn" onclick="switchTab('ai',this)"><span class="tab-num">✦</span>ANÁLISIS IA</button>
     </div>
 
@@ -523,7 +556,32 @@ footer a:hover{color:var(--green)}
       <button class="gen-btn" onclick="openReport()">Generar reporte completo →</button>
     </div>
 
-    <!-- ══ TAB 6: AI ══ -->
+    <!-- ══ TAB 7: JUGADORES ══ -->
+    <div id="tab-jugadores" class="tab-content">
+
+      <!-- Search bar -->
+      <div class="panel" style="border-color:rgba(0,232,122,.25);background:linear-gradient(135deg,rgba(0,232,122,.04),transparent)">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">
+          <div class="ai-pulse"></div>
+          <div class="panel-title" style="margin:0">Búsqueda de jugadores con IA</div>
+        </div>
+        <p style="font-size:.82rem;color:var(--text2);margin-bottom:.85rem">La IA busca automáticamente los jugadores clave de ambos equipos con sus estadísticas reales de la temporada y calcula probabilidades para cada mercado de jugador.</p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <input type="text" id="player_search" placeholder="Ej: Brasil vs Argentina Mundial 2026, Real Madrid vs Bayern..." style="flex:1;min-width:220px;padding:.7rem 1rem;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);font-family:var(--sans);font-size:.88rem;color:var(--text);outline:none;transition:border-color .2s" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border2)'" onkeydown="if(event.key==='Enter')searchPlayers()">
+          <button onclick="searchPlayers()" id="player_search_btn" style="padding:.7rem 1.4rem;background:var(--green);color:#000;font-family:var(--display);font-weight:700;font-size:.85rem;border:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:.4rem">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Buscar jugadores
+          </button>
+        </div>
+        <div id="player_status" style="display:none;margin-top:.75rem;padding:.55rem .9rem;border-radius:var(--radius);font-family:var(--mono);font-size:.75rem"></div>
+      </div>
+
+      <!-- Results will be injected here -->
+      <div id="players_out"></div>
+
+    </div>
+
+    <!-- ══ TAB 8: AI ══ -->
     <div id="tab-ai" class="tab-content">
       <!-- API key input -->
       <div class="panel" style="border-color:rgba(0,232,122,.25);background:linear-gradient(135deg,rgba(0,232,122,.04),rgba(0,232,122,.01))">
@@ -1658,6 +1716,230 @@ function applyFillData(){
 
   // Scroll to tabs
   document.querySelector('.tabs-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ══ JUGADORES ══ */
+function setPStatus(msg,type,spin=false){
+  const el=document.getElementById('player_status');
+  el.style.display='block';
+  const c={ok:'var(--green)',error:'var(--red)',loading:'var(--amber)'};
+  const b={ok:'var(--green-dim)',error:'var(--red-dim)',loading:'var(--amber-dim)'};
+  el.style.background=b[type]||b.loading;
+  el.style.border=`1px solid ${c[type]||c.loading}`;
+  el.style.color=c[type]||c.loading;
+  el.innerHTML=spin?`<span style="display:inline-flex;align-items:center;gap:.5rem"><span class="typing" style="display:inline-flex;gap:3px"><span></span><span></span><span></span></span>${msg}</span>`:msg;
+}
+
+async function searchPlayers(){
+  const q=document.getElementById('player_search').value.trim();
+  if(!q){setPStatus('Escribe el nombre del partido primero.','error');return;}
+  const key=getKey();
+  if(!key){setPStatus('Ingresa tu API Key en el módulo ✦ ANÁLISIS IA primero.','error');return;}
+  const btn=document.getElementById('player_search_btn');
+  btn.disabled=true;btn.style.opacity='.6';
+  document.getElementById('players_out').innerHTML='';
+  setPStatus('Buscando jugadores y estadísticas reales...','loading',true);
+
+  const prompt=`Eres un experto en estadísticas de fútbol. El partido es: "${q}".
+
+Busca los jugadores titulares más importantes de cada equipo con sus estadísticas reales de la temporada actual. Incluye los mejores goleadores, mediocampistas clave y laterales ofensivos.
+
+Responde ÚNICAMENTE con JSON válido, sin texto adicional ni markdown:
+{
+  "home_team": "Nombre equipo local",
+  "away_team": "Nombre equipo visitante",
+  "competition": "Nombre competición",
+  "home_players": [
+    {
+      "name": "Nombre Apellido",
+      "position": "FW",
+      "number": 9,
+      "goals_per_game": 0.62,
+      "shots_on_target_per_game": 2.1,
+      "yellow_cards_per_game": 0.15,
+      "assists_per_game": 0.22,
+      "minutes_per_game": 82,
+      "is_starter": true,
+      "form": "Buena racha, anotó en últimos 3 partidos"
+    }
+  ],
+  "away_players": [
+    {
+      "name": "Nombre Apellido",
+      "position": "FW",
+      "number": 10,
+      "goals_per_game": 0.55,
+      "shots_on_target_per_game": 1.8,
+      "yellow_cards_per_game": 0.12,
+      "assists_per_game": 0.30,
+      "minutes_per_game": 88,
+      "is_starter": true,
+      "form": "Sin gol en últimos 2 partidos"
+    }
+  ]
+}
+
+Incluye entre 5-8 jugadores por equipo. Posiciones válidas: FW (delantero), MF (mediocampista), DF (defensa), GK (portero). Los goleadores y atacantes primero.`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:2000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.statusText);}
+    const data=await resp.json();
+    let raw=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    // If tool_use was called, do follow-up
+    if(!raw.includes('{')&&data.content.some(b=>b.type==='tool_use')){
+      const toolResults=data.content.filter(b=>b.type==='tool_use').map(b=>({type:'tool_result',tool_use_id:b.id,content:'Usa los datos encontrados para generar el JSON solicitado.'}));
+      const r2=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,
+          messages:[{role:'user',content:prompt},{role:'assistant',content:data.content},{role:'user',content:toolResults}]})
+      });
+      const d2=await r2.json();
+      raw=d2.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    }
+    const match=raw.match(/\{[\s\S]*\}/);
+    if(!match)throw new Error('No se pudo obtener datos de jugadores. Intenta con un partido más conocido.');
+    const d=JSON.parse(match[0]);
+    setPStatus(`✓ ${d.home_players.length+d.away_players.length} jugadores encontrados para ${d.home_team} vs ${d.away_team}`,'ok');
+    renderPlayers(d);
+  }catch(e){
+    setPStatus('✗ Error: '+e.message,'error');
+  }finally{
+    btn.disabled=false;btn.style.opacity='1';
+  }
+}
+
+function calcPlayerProbs(p, matchMinutes=90){
+  // Minutes adjustment factor (if player plays fewer minutes, scale down)
+  const mFactor = Math.min(1, (p.minutes_per_game||80) / 90);
+  // Goal probability (Poisson: P(>=1 goal) = 1 - e^-lambda)
+  const goalLambda = (p.goals_per_game||0) * mFactor;
+  const goalProb   = (1 - Math.exp(-goalLambda)) * 100;
+  // Anytime scorer
+  const anyGoal = goalProb;
+  // First goal scorer (rough estimate: proportional to expected goals share)
+  const firstGoal = goalProb * 0.28; // ~28% of anytime scorers score first
+  // Goal in first half (roughly 40% of goals before HT)
+  const firstHalfGoal = goalProb * 0.40;
+  // Shots on target
+  const sotLambda = (p.shots_on_target_per_game||0) * mFactor;
+  const sot1Plus  = (1 - Math.exp(-sotLambda)) * 100;
+  const sot2Plus  = (1 - Math.exp(-sotLambda) * (1 + sotLambda)) * 100;
+  // Yellow card
+  const ycLambda = (p.yellow_cards_per_game||0) * mFactor;
+  const ycProb   = (1 - Math.exp(-ycLambda)) * 100;
+  // Assist
+  const astLambda = (p.assists_per_game||0) * mFactor;
+  const astProb   = (1 - Math.exp(-astLambda)) * 100;
+
+  return { goalProb, anyGoal, firstGoal, firstHalfGoal, sot1Plus, sot2Plus, ycProb, astProb };
+}
+
+function probColor(v){ return v>55?'prob-high':v>30?'prob-mid':'prob-low'; }
+function probBarColor(v){ return v>55?'var(--green)':v>30?'var(--amber)':'var(--red)'; }
+function toOdd(pct){ return pct>0?(100/pct).toFixed(2):'—'; }
+
+function renderPlayerCard(p){
+  const pr = calcPlayerProbs(p);
+  const posClass = {FW:'pos-fw',MF:'pos-mf',DF:'pos-df',GK:'pos-gk'}[p.position]||'pos-mf';
+  const posLabel = {FW:'Delantero',MF:'Mediocampista',DF:'Defensa',GK:'Portero'}[p.position]||p.position;
+
+  const mkts = p.position==='GK' ? [
+    { name:'Portería en cero (clean sheet)', prob:Math.min(95,(1-pr.goalProb/100)*100*1.1), bar:true },
+    { name:'Tarjeta amarilla', prob:pr.ycProb, bar:true },
+  ] : [
+    { name:'Gol en el partido', prob:pr.anyGoal, bar:true },
+    { name:'Primer goleador', prob:pr.firstGoal, bar:true },
+    { name:'Gol en primer tiempo', prob:pr.firstHalfGoal, bar:true },
+    { name:'≥1 tiro al arco', prob:pr.sot1Plus, bar:true },
+    { name:'≥2 tiros al arco', prob:pr.sot2Plus, bar:true },
+    { name:'Asistencia', prob:pr.astProb, bar:true },
+    { name:'Tarjeta amarilla', prob:pr.ycProb, bar:true },
+  ];
+
+  return `<div class="player-card">
+    <div class="player-card-header">
+      <span style="font-family:var(--mono);font-size:.75rem;color:var(--text3);min-width:20px">${p.number||'—'}</span>
+      <span class="player-pos ${posClass}">${posLabel}</span>
+      <span class="player-name">${p.name}</span>
+    </div>
+    ${p.form?`<div style="padding:.4rem 1rem;font-size:.72rem;color:var(--text3);font-style:italic;border-bottom:1px solid var(--border)">${p.form}</div>`:''}
+    <div class="player-body">
+      ${mkts.map(m=>{
+        const pc=probColor(m.prob);
+        return `<div class="mkt-row">
+          <span class="mkt-name">${m.name}</span>
+          <div class="mkt-bar"><div class="mkt-fill" style="width:${Math.min(100,m.prob).toFixed(0)}%;background:${probBarColor(m.prob)}"></div></div>
+          <span class="mkt-prob ${pc}">${m.prob.toFixed(1)}%</span>
+          <span class="mkt-odd">${toOdd(m.prob)}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderPlayers(d){
+  // Build top picks summary
+  const allPlayers = [
+    ...d.home_players.map(p=>({...p,team:d.home_team})),
+    ...d.away_players.map(p=>({...p,team:d.away_team}))
+  ];
+  const topScorer  = allPlayers.filter(p=>p.position!=='GK').sort((a,b)=>b.goals_per_game-a.goals_per_game)[0];
+  const topSot     = allPlayers.filter(p=>p.position!=='GK').sort((a,b)=>b.shots_on_target_per_game-a.shots_on_target_per_game)[0];
+  const topYellow  = allPlayers.sort((a,b)=>b.yellow_cards_per_game-a.yellow_cards_per_game)[0];
+  const topAssist  = allPlayers.filter(p=>p.position!=='GK').sort((a,b)=>b.assists_per_game-a.assists_per_game)[0];
+
+  const topScProb  = topScorer  ? calcPlayerProbs(topScorer).anyGoal.toFixed(1)   : '—';
+  const topSotProb = topSot     ? calcPlayerProbs(topSot).sot2Plus.toFixed(1)     : '—';
+  const topYcProb  = topYellow  ? calcPlayerProbs(topYellow).ycProb.toFixed(1)    : '—';
+  const topAstProb = topAssist  ? calcPlayerProbs(topAssist).astProb.toFixed(1)   : '—';
+
+  let html = `
+  <div class="market-summary-box">
+    <div class="ms-title">✦ Mejores picks de jugadores</div>
+    <div class="ms-row"><span style="color:var(--text2)">⚽ Más probable que anote</span><span><b>${topScorer?.name||'—'}</b> <span style="font-family:var(--mono);color:var(--green)">${topScProb}%</span> <span style="font-family:var(--mono);font-size:.72rem;color:var(--text3)">(${topScorer?.team||''})</span></span></div>
+    <div class="ms-row"><span style="color:var(--text2)">🎯 Más tiros al arco (+2)</span><span><b>${topSot?.name||'—'}</b> <span style="font-family:var(--mono);color:var(--amber)">${topSotProb}%</span> <span style="font-family:var(--mono);font-size:.72rem;color:var(--text3)">(${topSot?.team||''})</span></span></div>
+    <div class="ms-row"><span style="color:var(--text2)">🟨 Más probable tarjeta</span><span><b>${topYellow?.name||'—'}</b> <span style="font-family:var(--mono);color:var(--red)">${topYcProb}%</span> <span style="font-family:var(--mono);font-size:.72rem;color:var(--text3)">(${topYellow?.team||''})</span></span></div>
+    <div class="ms-row"><span style="color:var(--text2)">🅰️ Más probable asistencia</span><span><b>${topAssist?.name||'—'}</b> <span style="font-family:var(--mono);color:var(--blue)">${topAstProb}%</span> <span style="font-family:var(--mono);font-size:.72rem;color:var(--text3)">(${topAssist?.team||''})</span></span></div>
+    <p style="font-size:.72rem;color:var(--text3);margin-top:.65rem;font-family:var(--mono)">La columna derecha muestra la cuota mínima necesaria para que la apuesta tenga EV neutro. Cuotas mayores = valor positivo.</p>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:.5rem;margin:.85rem 0 .5rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">
+    <span style="font-size:.7rem;font-family:var(--mono);color:var(--text3)">PROB.</span>
+    <span style="display:flex;align-items:center;gap:.3rem;font-size:.72rem;font-family:var(--mono)">
+      <span style="color:var(--green)">■</span>>55% alta &nbsp;
+      <span style="color:var(--amber)">■</span>30-55% media &nbsp;
+      <span style="color:var(--red)">■</span><30% baja
+    </span>
+  </div>
+
+  <div class="team-section">
+    <div class="team-header">
+      <div class="team-badge" style="background:rgba(0,232,122,.1)">🏠</div>
+      <div><div class="team-label">${d.home_team}</div><div class="team-sub">LOCAL · ${d.home_players.length} jugadores</div></div>
+    </div>
+    <div class="players-grid">${d.home_players.map(renderPlayerCard).join('')}</div>
+  </div>
+
+  <div class="team-section">
+    <div class="team-header">
+      <div class="team-badge" style="background:rgba(77,168,255,.1)">✈️</div>
+      <div><div class="team-label">${d.away_team}</div><div class="team-sub">VISITANTE · ${d.away_players.length} jugadores</div></div>
+    </div>
+    <div class="players-grid">${d.away_players.map(renderPlayerCard).join('')}</div>
+  </div>`;
+
+  document.getElementById('players_out').innerHTML = html;
 }
 
 /* ══ INIT ══ */
