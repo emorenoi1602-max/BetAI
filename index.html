@@ -365,6 +365,7 @@ footer a:hover{color:var(--green)}
       <button class="tab-btn" onclick="switchTab('global',this)"><span class="tab-num">5</span>GLOBAL</button>
       <button class="tab-btn" onclick="switchTab('mercados',this)"><span class="tab-num">6</span>MERCADOS</button>
       <button class="tab-btn" onclick="switchTab('jugadores',this)"><span class="tab-num">7</span>JUGADORES</button>
+      <button class="tab-btn" onclick="switchTab('tracker',this)"><span class="tab-num">8</span>TRACKER</button>
       <button class="tab-btn ai-tab-btn" onclick="switchTab('ai',this)"><span class="tab-num">✦</span>ANÁLISIS IA</button>
     </div>
 
@@ -384,6 +385,7 @@ footer a:hover{color:var(--green)}
           </div>
         </div>
         <div id="model_diff" style="display:none;margin-top:.75rem;padding:.6rem .9rem;background:var(--bg);border-radius:var(--radius);font-size:.78rem;color:var(--text2);font-family:var(--mono)"></div>
+        <div id="fusion_indicator"></div>
       </div>
       <div class="grid2">
         <div class="panel">
@@ -479,8 +481,9 @@ footer a:hover{color:var(--green)}
     <div id="tab-value" class="tab-content">
       <div class="panel">
         <div class="panel-title">Calculadora de valor esperado (EV)</div>
+        <div style="padding:.4rem .75rem;background:var(--green-dim);border:1px solid rgba(0,232,122,.2);border-radius:var(--radius);font-family:var(--mono);font-size:.72rem;color:var(--green);margin-bottom:.75rem" id="value_sync_note">Sincronizado automáticamente desde Poisson — edita el campo para anular</div>
         <div class="grid2" style="margin-bottom:1rem">
-          <div class="field"><label>Tu probabilidad estimada (%)</label><input type="number" id="my_prob" value="55" min="1" max="99" oninput="calcValue()"></div>
+          <div class="field"><label>Tu probabilidad estimada (%)</label><input type="number" id="my_prob" value="55" min="1" max="99" oninput="this.dataset.manual='1';calcValue()"></div>
           <div class="field"><label>Cuota de la casa (decimal)</label><input type="number" id="odd" value="2.10" step="0.01" min="1.01" oninput="calcValue()"></div>
         </div>
         <div class="grid3" style="margin-bottom:1rem">
@@ -527,6 +530,7 @@ footer a:hover{color:var(--green)}
         <div class="panel-title">Simulación de crecimiento</div>
         <div class="range-row"><label style="margin:0;min-width:160px">Apuestas a simular</label><input type="range" id="sim_n" min="10" max="200" step="10" value="50" oninput="document.getElementById('sim_n_v').textContent=this.value;runSim()"><span class="range-val" id="sim_n_v">50</span></div>
         <div class="grid3" id="sim_cards" style="margin:.75rem 0"></div>
+        <div id="sim_note" style="font-family:var(--mono);font-size:.7rem;color:var(--text3);margin-bottom:.5rem"></div>
         <div style="position:relative;height:140px"><canvas id="growthChart"></canvas></div>
       </div>
       <div class="panel">
@@ -540,6 +544,12 @@ footer a:hover{color:var(--green)}
 
     <!-- ══ TAB 5: GLOBAL ══ -->
     <div id="tab-global" class="tab-content">
+      <div class="panel">
+        <div class="panel-title">⚡ Alertas de contradicción entre módulos</div>
+        <div id="contradiction_box" style="padding:.75rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);min-height:40px">
+          <p style="color:var(--text3);font-size:.82rem">Completa los módulos Poisson y xG para detectar contradicciones automáticamente.</p>
+        </div>
+      </div>
       <div class="panel">
         <div class="panel-title">Resumen del análisis</div>
         <div id="global_sum"><p style="color:var(--text3);font-size:.85rem">Completa los módulos anteriores para ver el resumen aquí.</p></div>
@@ -581,7 +591,34 @@ footer a:hover{color:var(--green)}
 
     </div>
 
-    <!-- ══ TAB 8: AI ══ -->
+    <!-- ══ TAB 8: TRACKER ══ -->
+    <div id="tab-tracker" class="tab-content">
+      <div class="panel" style="border-color:rgba(0,232,122,.2)">
+        <div class="panel-title">📊 Registro de apuestas — P&L y ROI real</div>
+        <p style="font-size:.82rem;color:var(--text2);margin-bottom:1rem">Registra cada apuesta, marca el resultado y calcula tu ROI real automáticamente. Los datos se guardan en tu dispositivo.</p>
+        <div class="grid2" style="margin-bottom:.75rem">
+          <div class="field"><label>Partido</label><input type="text" id="tr_match" placeholder="Ej: Brasil vs Argentina" style="padding:.6rem .9rem;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);font-family:var(--sans);font-size:.85rem;color:var(--text);width:100%;outline:none"></div>
+          <div class="field"><label>Mercado</label><input type="text" id="tr_market" placeholder="Ej: Victoria local, Corners +9.5..." style="padding:.6rem .9rem;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);font-family:var(--sans);font-size:.85rem;color:var(--text);width:100%;outline:none"></div>
+          <div class="field"><label>Cuota decimal</label><input type="number" id="tr_odd" step="0.01" min="1.01" placeholder="2.10"></div>
+          <div class="field"><label>Monto apostado ($)</label><input type="number" id="tr_stake" min="0" placeholder="50"></div>
+          <div class="field"><label>Probabilidad estimada (%)</label><input type="number" id="tr_prob" min="1" max="99" placeholder="55" value="${poissonHomePct>0?poissonHomePct.toFixed(1):''}"></div>
+          <div style="display:flex;align-items:flex-end">
+            <button onclick="addBet()" style="width:100%;padding:.65rem;background:var(--green);color:#000;font-family:var(--display);font-weight:700;font-size:.85rem;border:none;border-radius:var(--radius);cursor:pointer">+ Registrar apuesta</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Resumen del tracker</div>
+        <div class="grid3" style="margin-bottom:1rem">
+          <div class="metric"><div class="metric-label">P&L Total</div><div class="metric-value" id="tr_total" style="font-size:1.4rem">$0.00</div></div>
+          <div class="metric"><div class="metric-label">ROI Real</div><div class="metric-value" id="tr_roi" style="font-size:1.4rem">0.0%</div></div>
+          <div class="metric"><div class="metric-label">Historial</div><div class="metric-value" id="tr_record" style="font-size:1rem">0G / 0P / 0 pend.</div></div>
+        </div>
+        <div id="tracker_table"></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB IA ══ -->
     <div id="tab-ai" class="tab-content">
       <!-- API key input -->
       <div class="panel" style="border-color:rgba(0,232,122,.25);background:linear-gradient(135deg,rgba(0,232,122,.04),rgba(0,232,122,.01))">
@@ -827,34 +864,68 @@ function switchTab(id,btn){
   btn.classList.add('active');
   document.getElementById('tab-'+id).classList.add('active');
   if(id==='bankroll')setTimeout(runSim,80);
-  if(id==='global'){updateChecklist();updateGlobalSummary();}
+  if(id==='global'){updateChecklist();updateGlobalSummary();checkContradictions();}
+  if(id==='tracker'){renderTracker();}
 }
 
 /* ══ POISSON ══ */
 function poisson(lam,k){let v=Math.exp(-lam);for(let i=1;i<=k;i++)v*=lam/i;return v;}
+
+// Global state for cross-module sync
+let lastLH=1.5, lastLA=1.2;
+let poissonHomePct=0, poissonDrawPct=0, poissonAwayPct=0;
+
 function calcPoisson(){
   const ha=+document.getElementById('h_att').value||1.6;
   const hd=+document.getElementById('h_def').value||1.0;
   const aa=+document.getElementById('a_att').value||1.2;
   const ad=+document.getElementById('a_def').value||1.3;
   const adv=+document.getElementById('h_adv').value||1.2;
-  const lh=(ha+ad)/2*adv, la=(aa+hd)/2;
+
+  // Base Poisson lambdas
+  const lhBase=(ha+ad)/2*adv;
+  const laBase=(aa+hd)/2;
+
+  // xG fusion — blend with Poisson (60% Poisson, 40% xG) when xG data is present
+  const hxgf=+document.getElementById('h_xgf').value;
+  const axgf=+document.getElementById('a_xgf').value;
+  const xgWeight=(hxgf>0&&axgf>0)?0.40:0;
+  const lh=xgWeight>0?lhBase*0.60+hxgf*0.40:lhBase;
+  const la=xgWeight>0?laBase*0.60+axgf*0.40:laBase;
+  lastLH=lh; lastLA=la;
+
   document.getElementById('xg_hp').textContent=lh.toFixed(2);
   document.getElementById('xg_ap').textContent=la.toFixed(2);
   document.getElementById('xg_tp').textContent=(lh+la).toFixed(2);
+
+  // Fusion indicator
+  const fuseEl=document.getElementById('fusion_indicator');
+  if(fuseEl){
+    if(xgWeight>0){
+      fuseEl.style.cssText='display:block;padding:.5rem .9rem;border-radius:var(--radius);font-family:var(--mono);font-size:.72rem;background:var(--green-dim);border:1px solid rgba(0,232,122,.3);color:var(--green);margin-top:.75rem';
+      fuseEl.innerHTML=`✦ Lambda fusionada xG+Poisson activa &nbsp;|&nbsp; λ local: <b>${lh.toFixed(2)}</b> (Poisson: ${lhBase.toFixed(2)}) &nbsp;|&nbsp; λ visit.: <b>${la.toFixed(2)}</b> (Poisson: ${laBase.toFixed(2)})`;
+    } else {
+      fuseEl.style.cssText='display:block;padding:.5rem .9rem;border-radius:var(--radius);font-family:var(--mono);font-size:.72rem;background:var(--bg);border:1px solid var(--border);color:var(--text3);margin-top:.75rem';
+      fuseEl.innerHTML=`Modo Poisson puro — Ingresa datos xG en tab <b>2 xG & FORMA</b> para activar fusión xG+Poisson`;
+    }
+  }
+
   let ph=0,pd=0,pa=0,btts=0,o25=0,mat=[];
   for(let h=0;h<=6;h++){let row=[];for(let a=0;a<=6;a++){
-    const p=activeModel==='dc' ? poissonDC(lh,la,h,a) : poisson(lh,h)*poisson(la,a);
+    const p=activeModel==='dc'?poissonDC(lh,la,h,a):poisson(lh,h)*poisson(la,a);
     row.push(p);if(h>a)ph+=p;else if(h===a)pd+=p;else pa+=p;if(h>0&&a>0)btts+=p;if(h+a>2.5)o25+=p;}mat.push(row);}
-  document.getElementById('p_home').textContent=(ph*100).toFixed(1)+'%';
-  document.getElementById('p_draw').textContent=(pd*100).toFixed(1)+'%';
-  document.getElementById('p_away').textContent=(pa*100).toFixed(1)+'%';
+
+  poissonHomePct=ph*100; poissonDrawPct=pd*100; poissonAwayPct=pa*100;
+  document.getElementById('p_home').textContent=poissonHomePct.toFixed(1)+'%';
+  document.getElementById('p_draw').textContent=poissonDrawPct.toFixed(1)+'%';
+  document.getElementById('p_away').textContent=poissonAwayPct.toFixed(1)+'%';
   document.getElementById('btts_p').textContent=(btts*100).toFixed(1)+'%';
   document.getElementById('o25_p').textContent=(o25*100).toFixed(1)+'%';
+
   // Matrix
   const mc=document.getElementById('matrix_out');
   let html=`<div style="display:grid;grid-template-columns:24px repeat(5,1fr);gap:2px">`;
-  html+=`<div class="m-label">L\V</div>`;
+  html+=`<div class="m-label">L╲V</div>`;
   for(let a=0;a<=4;a++)html+=`<div class="m-label">${a}</div>`;
   for(let h=0;h<=4;h++){
     html+=`<div class="m-label">${h}</div>`;
@@ -868,6 +939,15 @@ function calcPoisson(){
   }
   html+='</div>';
   mc.innerHTML=html;
+
+  // AUTO-SYNC best prob → Value Betting & Kelly (only if not manually overridden)
+  const bestProb=Math.max(ph,pd,pa)*100;
+  const vp=document.getElementById('my_prob');
+  if(vp&&!vp.dataset.manual){vp.value=bestProb.toFixed(1);calcValue();}
+  const kp=document.getElementById('bk_prob');
+  if(kp&&!kp.dataset.manual){kp.value=bestProb.toFixed(1);}
+
+  checkContradictions();
   pDone=true;
 }
 
@@ -897,6 +977,8 @@ function calcXG(){
   else if(edge<-0.5){vd.className='verdict verdict-good';vd.innerHTML='<strong>Ventaja real del visitante</strong>El visitante tiene mejor rendimiento xG ajustado. Explorar mercados a favor del visitante.';}
   else{vd.className='verdict verdict-neutral';vd.innerHTML='<strong>Partido muy parejo</strong>Los indicadores xG no favorecen claramente a ningún equipo. Mayor riesgo en resultado directo — explorar mercados de goles.';}
   xDone=true;
+  // Re-trigger Poisson to fuse new xG data into lambda
+  calcPoisson();
 }
 
 /* ══ VALUE ══ */
@@ -909,6 +991,13 @@ function calcValue(){
   document.getElementById('ev_v').textContent=(ev>=0?'+':'')+ev.toFixed(3);
   document.getElementById('edge_v').textContent=(edge>=0?'+':'')+edge.toFixed(1)+'%';
   gEV=ev;gEdge=edge;
+
+  // Show which outcome the probability corresponds to
+  const bestOutcome=poissonHomePct>=poissonDrawPct&&poissonHomePct>=poissonAwayPct?'Victoria Local':
+                    poissonDrawPct>=poissonHomePct&&poissonDrawPct>=poissonAwayPct?'Empate':'Victoria Visitante';
+  const syncNote=document.getElementById('value_sync_note');
+  if(syncNote)syncNote.textContent=`Sincronizado desde Poisson — ${bestOutcome} (${(mp*100).toFixed(1)}%)`;
+
   const vd=document.getElementById('val_verdict');
   if(ev>0.05&&edge>3){vd.className='verdict verdict-good';vd.innerHTML='<strong>HAY VALOR — Edge real significativo</strong>EV positivo por encima del umbral profesional. A largo plazo esta apuesta es matemáticamente rentable si tu estimación es precisa.';}
   else if(ev>0){vd.className='verdict verdict-neutral';vd.innerHTML='<strong>Valor marginal</strong>El edge positivo existe pero es pequeño. Solo apostar con alta confianza en tu estimación de probabilidad.';}
@@ -951,7 +1040,7 @@ function calcKelly(){
   runSim();updateChecklist();
 }
 
-/* ══ SIM ══ */
+/* ══ MONTE CARLO ══ */
 function runSim(){
   const b=+document.getElementById('bk_total').value||1000;
   const od=+document.getElementById('bk_odd').value||2.1;
@@ -959,29 +1048,39 @@ function runSim(){
   const fr=+document.getElementById('bk_frac').value||0.25;
   const n=+document.getElementById('sim_n').value||50;
   const bn=od-1,kelly=Math.max(0,(bn*p-(1-p))/bn)*fr;
-  let bk=b,pk=b,mdd=0,hist=[b];
-  for(let i=0;i<n;i++){
-    const bet=bk*kelly;
-    bk+=Math.random()<p?bet*(od-1):-bet;
-    if(bk>pk)pk=bk;
-    const dd=(pk-bk)/pk*100;
-    if(dd>mdd)mdd=dd;
-    hist.push(bk);
+  const RUNS=500;
+  let finals=[],mdds=[];
+  for(let r=0;r<RUNS;r++){
+    let bk=b,pk=b,mdd=0;
+    for(let i=0;i<n;i++){
+      const bet=bk*kelly;
+      bk+=Math.random()<p?bet*bn:-bet;
+      bk=Math.max(0,bk);
+      if(bk>pk)pk=bk;
+      const dd=(pk-bk)/pk*100;
+      if(dd>mdd)mdd=dd;
+    }
+    finals.push(bk);mdds.push(mdd);
   }
-  const roi=(bk-b)/b*100;
+  finals.sort((a,c)=>a-c);mdds.sort((a,c)=>a-c);
+  const median=finals[Math.floor(RUNS/2)];
+  const p10=finals[Math.floor(RUNS*0.10)];
+  const p90=finals[Math.floor(RUNS*0.90)];
+  const medMDD=mdds[Math.floor(RUNS/2)];
+  const pctWin=(finals.filter(v=>v>b).length/RUNS*100).toFixed(0);
+  const medROI=((median-b)/b*100);
   document.getElementById('sim_cards').innerHTML=`
-    <div class="metric"><div class="metric-label">Bankroll final</div><div class="metric-value" style="font-size:1.2rem">$${Math.round(bk).toLocaleString()}</div></div>
-    <div class="metric ${roi>=0?'green':'red'}"><div class="metric-label">ROI simulado</div><div class="metric-value" style="font-size:1.2rem">${roi>=0?'+':''}${roi.toFixed(1)}%</div></div>
-    <div class="metric amber"><div class="metric-label">Max drawdown</div><div class="metric-value" style="font-size:1.2rem">-${mdd.toFixed(1)}%</div></div>`;
+    <div class="metric ${medROI>=0?'green':'red'}"><div class="metric-label">Bankroll mediano</div><div class="metric-value" style="font-size:1.1rem">$${Math.round(median).toLocaleString()}</div><div class="metric-sub">${medROI>=0?'+':''}${medROI.toFixed(1)}% ROI</div></div>
+    <div class="metric"><div class="metric-label">Rango P10–P90</div><div class="metric-value" style="font-size:1rem">$${Math.round(p10).toLocaleString()}</div><div class="metric-sub">hasta $${Math.round(p90).toLocaleString()}</div></div>
+    <div class="metric amber"><div class="metric-label">Prob. ganancia</div><div class="metric-value" style="font-size:1.1rem">${pctWin}%</div><div class="metric-sub">MDD mediana: ${medMDD.toFixed(1)}%</div></div>`;
+  const noteEl=document.getElementById('sim_note');
+  if(noteEl)noteEl.textContent=`Monte Carlo ${RUNS} simulaciones · ${n} apuestas · Kelly ×${fr}`;
   if(growthInst){growthInst.destroy();}
-  const ctx=document.getElementById('growthChart');
-  if(!ctx)return;
-  const step=Math.max(1,Math.floor(hist.length/25));
-  const labels=hist.filter((_,i)=>i%step===0).map((_,i)=>'');
-  const data=hist.filter((_,i)=>i%step===0);
-  growthInst=new Chart(ctx,{
-    type:'line',
-    data:{labels,datasets:[{data,borderColor:bk>b?'#00e87a':'#ff4d6d',borderWidth:1.5,fill:false,pointRadius:0,tension:0.3}]},
+  const ctx=document.getElementById('growthChart');if(!ctx)return;
+  // Expected growth path
+  let path=[b];for(let i=0;i<n;i++)path.push(path[path.length-1]*(1+kelly*(p*bn-(1-p))));
+  growthInst=new Chart(ctx,{type:'line',
+    data:{labels:path.map(()=>''),datasets:[{label:'Trayectoria esperada',data:path,borderColor:'#00e87a',borderWidth:2,fill:false,pointRadius:0,tension:0.3}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:true,ticks:{color:'#4a5568',font:{family:'DM Mono',size:10},callback:v=>'$'+Math.round(v)},grid:{color:'rgba(255,255,255,.04)'}}}}
   });
 }
@@ -1748,8 +1847,8 @@ async function searchPlayers(){
     const combined = {
       home_team: homeData.team,
       away_team: awayData.team,
-      home_players: homeData.players,
-      away_players: awayData.players
+      home_players: homeData.players.map(p=>({...p,_isHome:true})),
+      away_players: awayData.players.map(p=>({...p,_isHome:false}))
     };
     setPStatus(`✓ ${combined.home_players.length + combined.away_players.length} jugadores encontrados para ${combined.home_team} vs ${combined.away_team}`,'ok');
     renderPlayers(combined);
@@ -1965,8 +2064,140 @@ function renderPlayers(d){
   document.getElementById('players_out').innerHTML = html;
 }
 
+/* ══ CONTRADICTION CHECK ══ */
+function checkContradictions(){
+  const el=document.getElementById('contradiction_box');
+  if(!el||!xDone||!pDone)return;
+  const alerts=[];
+  // 1. Poisson vs xG direction disagreement
+  const hxgf=+document.getElementById('h_xgf').value||0;
+  const axgf=+document.getElementById('a_xgf').value||0;
+  if(hxgf>0&&axgf>0){
+    const poissonFavorsHome=poissonHomePct>poissonAwayPct;
+    const xgFavorsHome=hxgf>axgf;
+    if(poissonFavorsHome!==xgFavorsHome){
+      alerts.push({type:'amber',msg:`⚠️ Contradicción: Poisson favorece al ${poissonFavorsHome?'local':'visitante'} (${Math.max(poissonHomePct,poissonAwayPct).toFixed(1)}%) pero xG favorece al ${xgFavorsHome?'local':'visitante'} (${Math.max(hxgf,axgf).toFixed(2)} xG). Verificar datos.`});
+    }
+  }
+  // 2. Very high probability but low EV — cuota probably too low
+  if(poissonHomePct>70&&gEV<0.05&&gEdge<3){
+    alerts.push({type:'amber',msg:`⚠️ Probabilidad alta (${poissonHomePct.toFixed(1)}%) pero EV bajo (${gEV.toFixed(3)}). La casa ya refleja esta ventaja en la cuota. Buscar mercado alternativo.`});
+  }
+  // 3. EV positive but probability very low — overconfidence risk
+  if(gEdge>15&&poissonHomePct<40){
+    alerts.push({type:'red',msg:`🔴 Edge muy alto (${gEdge.toFixed(1)}%) con probabilidad baja (${poissonHomePct.toFixed(1)}%). Revisar si la estimación de probabilidad es realista.`});
+  }
+  // 4. Kelly bet > 10% of bankroll
+  if(gBankroll>0&&(gBet/gBankroll)>0.10){
+    alerts.push({type:'red',msg:`🔴 La apuesta Kelly (${(gBet/gBankroll*100).toFixed(1)}% del bankroll) supera el límite seguro del 10%. Reducir la fracción de Kelly.`});
+  }
+  // 5. No competition preset selected
+  if(!activePreset&&pDone){
+    alerts.push({type:'info',msg:`ℹ️ Sin competición seleccionada. Activa un preset (Mundial, Champions, etc.) para calibrar el factor de local y el modelo DC.`});
+  }
+  if(alerts.length===0){
+    el.innerHTML='<div style="color:var(--green);font-family:var(--mono);font-size:.78rem">✓ Sin contradicciones detectadas entre módulos.</div>';
+    el.style.borderColor='rgba(0,232,122,.2)';
+  } else {
+    el.innerHTML=alerts.map(a=>`<div style="padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.8rem;color:${a.type==='red'?'var(--red)':a.type==='amber'?'var(--amber)':'var(--blue)'}">${a.msg}</div>`).join('');
+    el.style.borderColor=alerts.some(a=>a.type==='red')?'rgba(255,77,109,.3)':'rgba(255,181,71,.3)';
+  }
+}
+
+/* ══ PLAYER DEFENSE ADJUSTMENT ══ */
+function calcPlayerProbs(p, matchMinutes=90){
+  const mFactor=Math.min(1,(p.minutes_per_game||80)/90);
+  // Defense strength of opponent (from Poisson data)
+  // If player is in home team, opponent is away (use laBase goals allowed)
+  // Adjust goal probability by opponent defensive strength vs league avg
+  const leagueAvgGoals=activePreset?PRESETS[activePreset].goals/2:1.35;
+  const oppDefStrength=p._isHome?(lastLA/leagueAvgGoals):(lastLH/leagueAvgGoals);
+  const defAdj=Math.max(0.5,Math.min(1.8,oppDefStrength));
+
+  const goalLambda=(p.goals_per_game||0)*mFactor*defAdj;
+  const goalProb=(1-Math.exp(-goalLambda))*100;
+  const firstGoal=goalProb*0.28;
+  const firstHalfGoal=goalProb*0.40;
+  const sotLambda=(p.shots_on_target_per_game||0)*mFactor*Math.sqrt(defAdj);
+  const sot1Plus=(1-Math.exp(-sotLambda))*100;
+  const sot2Plus=(1-Math.exp(-sotLambda)*(1+sotLambda))*100;
+  const ycLambda=(p.yellow_cards_per_game||0)*mFactor;
+  const ycProb=(1-Math.exp(-ycLambda))*100;
+  const astLambda=(p.assists_per_game||0)*mFactor;
+  const astProb=(1-Math.exp(-astLambda))*100;
+  return {goalProb,firstGoal,firstHalfGoal,sot1Plus,sot2Plus,ycProb,astProb,defAdj};
+}
+
+/* ══ BET TRACKER ══ */
+let trackerBets=[];
+try{const s=localStorage.getItem('statbet_tracker');if(s)trackerBets=JSON.parse(s);}catch(e){}
+
+function saveBets(){try{localStorage.setItem('statbet_tracker',JSON.stringify(trackerBets));}catch(e){}}
+
+function addBet(){
+  const match=document.getElementById('tr_match').value.trim();
+  const market=document.getElementById('tr_market').value.trim();
+  const odd=+document.getElementById('tr_odd').value;
+  const stake=+document.getElementById('tr_stake').value;
+  const prob=+document.getElementById('tr_prob').value;
+  if(!match||!odd||!stake){alert('Completa al menos partido, cuota y monto.');return;}
+  trackerBets.push({id:Date.now(),date:new Date().toLocaleDateString('es'),match,market,odd,stake,prob,result:'pending',profit:0});
+  saveBets();renderTracker();
+  document.getElementById('tr_match').value='';
+  document.getElementById('tr_market').value='';
+  document.getElementById('tr_odd').value='';
+  document.getElementById('tr_stake').value='';
+}
+
+function setResult(id,result){
+  const b=trackerBets.find(x=>x.id===id);
+  if(!b)return;
+  b.result=result;
+  b.profit=result==='win'?+(b.stake*(b.odd-1)).toFixed(2):result==='loss'?-b.stake:0;
+  saveBets();renderTracker();
+}
+
+function deleteBet(id){trackerBets=trackerBets.filter(x=>x.id!==id);saveBets();renderTracker();}
+
+function renderTracker(){
+  const el=document.getElementById('tracker_table');
+  if(!el)return;
+  const total=trackerBets.reduce((s,b)=>s+(b.result!=='pending'?b.profit:0),0);
+  const totalStake=trackerBets.filter(b=>b.result!=='pending').reduce((s,b)=>s+b.stake,0);
+  const roi=totalStake>0?(total/totalStake*100):0;
+  const wins=trackerBets.filter(b=>b.result==='win').length;
+  const losses=trackerBets.filter(b=>b.result==='loss').length;
+  const pending=trackerBets.filter(b=>b.result==='pending').length;
+  document.getElementById('tr_total').textContent=(total>=0?'+':'')+'$'+total.toFixed(2);
+  document.getElementById('tr_total').style.color=total>=0?'var(--green)':'var(--red)';
+  document.getElementById('tr_roi').textContent=(roi>=0?'+':'')+roi.toFixed(1)+'%';
+  document.getElementById('tr_roi').style.color=roi>=0?'var(--green)':'var(--red)';
+  document.getElementById('tr_record').textContent=`${wins}G / ${losses}P / ${pending} pend.`;
+  if(trackerBets.length===0){el.innerHTML='<p style="color:var(--text3);font-size:.82rem;padding:.5rem 0">No hay apuestas registradas aún.</p>';return;}
+  el.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.78rem">
+    <thead><tr style="border-bottom:1px solid var(--border)">
+      ${['Fecha','Partido','Mercado','Cuota','Monto','P%','Resultado','P&L',''].map(h=>`<th style="padding:.5rem .6rem;text-align:left;font-family:var(--mono);font-size:.68rem;color:var(--text3);white-space:nowrap">${h}</th>`).join('')}
+    </tr></thead>
+    <tbody>${trackerBets.slice().reverse().map(b=>`<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:.5rem .6rem;color:var(--text3);white-space:nowrap">${b.date}</td>
+      <td style="padding:.5rem .6rem;font-weight:500;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.match}</td>
+      <td style="padding:.5rem .6rem;color:var(--text2)">${b.market||'—'}</td>
+      <td style="padding:.5rem .6rem;font-family:var(--mono)">${b.odd}</td>
+      <td style="padding:.5rem .6rem;font-family:var(--mono)">$${b.stake}</td>
+      <td style="padding:.5rem .6rem;font-family:var(--mono)">${b.prob?b.prob+'%':'—'}</td>
+      <td style="padding:.5rem .6rem">
+        ${b.result==='pending'
+          ?`<button onclick="setResult(${b.id},'win')" style="padding:2px 8px;background:var(--green-dim);color:var(--green);border:1px solid var(--green2);border-radius:4px;font-size:.7rem;cursor:pointer;margin-right:3px">✓ Ganó</button><button onclick="setResult(${b.id},'loss')" style="padding:2px 8px;background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,109,.3);border-radius:4px;font-size:.7rem;cursor:pointer">✗ Perdió</button>`
+          :`<span class="badge ${b.result==='win'?'badge-green':'badge-red'}">${b.result==='win'?'Ganó':'Perdió'}</span>`}
+      </td>
+      <td style="padding:.5rem .6rem;font-family:var(--mono);color:${b.profit>0?'var(--green)':b.profit<0?'var(--red)':'var(--text3)'};font-weight:600">${b.result==='pending'?'—':(b.profit>=0?'+':'')+'$'+b.profit.toFixed(2)}</td>
+      <td style="padding:.5rem .6rem"><button onclick="deleteBet(${b.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.9rem">✕</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
 /* ══ INIT ══ */
-calcPoisson();calcXG();calcValue();calcKelly();calcCorners();calcShots();calcCards();
+calcPoisson();calcXG();calcValue();calcKelly();calcCorners();calcShots();calcCards();renderTracker();
 </script>
 </body>
 </html>
