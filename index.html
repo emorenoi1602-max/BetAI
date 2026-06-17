@@ -1941,37 +1941,27 @@ Posiciones: FW=delantero, MF=mediocampista, DF=defensa, GK=portero. Máximo 5 ju
   }
 }
 
-function calcPlayerProbs(p, matchMinutes=90){
-  // Minutes adjustment factor (if player plays fewer minutes, scale down)
-  const mFactor = Math.min(1, (p.minutes_per_game||80) / 90);
-  // Goal probability (Poisson: P(>=1 goal) = 1 - e^-lambda)
-  const goalLambda = (p.goals_per_game||0) * mFactor;
-  const goalProb   = (1 - Math.exp(-goalLambda)) * 100;
-  // Anytime scorer
-  const anyGoal = goalProb;
-  // First goal scorer (rough estimate: proportional to expected goals share)
-  const firstGoal = goalProb * 0.28; // ~28% of anytime scorers score first
-  // Goal in first half (roughly 40% of goals before HT)
-  const firstHalfGoal = goalProb * 0.40;
-  // Shots on target
-  const sotLambda = (p.shots_on_target_per_game||0) * mFactor;
-  const sot1Plus  = (1 - Math.exp(-sotLambda)) * 100;
-  const sot2Plus  = (1 - Math.exp(-sotLambda) * (1 + sotLambda)) * 100;
-  // Yellow card
-  const ycLambda = (p.yellow_cards_per_game||0) * mFactor;
-  const ycProb   = (1 - Math.exp(-ycLambda)) * 100;
-  // Assist
-  const astLambda = (p.assists_per_game||0) * mFactor;
-  const astProb   = (1 - Math.exp(-astLambda)) * 100;
-
-  return { goalProb, anyGoal, firstGoal, firstHalfGoal, sot1Plus, sot2Plus, ycProb, astProb };
+function sanitizePlayer(p){
+  return {
+    name:                    p.name                    || 'Jugador',
+    position:                p.position                || 'MF',
+    number:                  p.number                  || '—',
+    goals_per_game:          +p.goals_per_game         || 0,
+    shots_on_target_per_game:+p.shots_on_target_per_game || 0,
+    yellow_cards_per_game:   +p.yellow_cards_per_game  || 0,
+    assists_per_game:        +p.assists_per_game       || 0,
+    minutes_per_game:        +p.minutes_per_game       || 80,
+    form:                    p.form                    || '',
+    _isHome:                 !!p._isHome,
+  };
 }
 
 function probColor(v){ return v>55?'prob-high':v>30?'prob-mid':'prob-low'; }
 function probBarColor(v){ return v>55?'var(--green)':v>30?'var(--amber)':'var(--red)'; }
-function toOdd(pct){ return pct>0?(100/pct).toFixed(2):'—'; }
+function toOdd(pct){ return pct>1?(100/pct).toFixed(2):'—'; }
 
-function renderPlayerCard(p){
+function renderPlayerCard(raw){
+  const p  = sanitizePlayer(raw);
   const pr = calcPlayerProbs(p);
   const posClass = {FW:'pos-fw',MF:'pos-mf',DF:'pos-df',GK:'pos-gk'}[p.position]||'pos-mf';
   const posLabel = {FW:'Delantero',MF:'Mediocampista',DF:'Defensa',GK:'Portero'}[p.position]||p.position;
@@ -2011,20 +2001,25 @@ function renderPlayerCard(p){
 }
 
 function renderPlayers(d){
+  // Sanitize all players first
+  const homePlayers = d.home_players.map(p=>sanitizePlayer({...p,_isHome:true}));
+  const awayPlayers = d.away_players.map(p=>sanitizePlayer({...p,_isHome:false}));
+
   // Build top picks summary
   const allPlayers = [
-    ...d.home_players.map(p=>({...p,team:d.home_team})),
-    ...d.away_players.map(p=>({...p,team:d.away_team}))
+    ...homePlayers.map(p=>({...p,team:d.home_team})),
+    ...awayPlayers.map(p=>({...p,team:d.away_team}))
   ];
-  const topScorer  = allPlayers.filter(p=>p.position!=='GK').sort((a,b)=>b.goals_per_game-a.goals_per_game)[0];
-  const topSot     = allPlayers.filter(p=>p.position!=='GK').sort((a,b)=>b.shots_on_target_per_game-a.shots_on_target_per_game)[0];
-  const topYellow  = allPlayers.sort((a,b)=>b.yellow_cards_per_game-a.yellow_cards_per_game)[0];
-  const topAssist  = allPlayers.filter(p=>p.position!=='GK').sort((a,b)=>b.assists_per_game-a.assists_per_game)[0];
+  const fw = allPlayers.filter(p=>p.position!=='GK');
+  const topScorer  = fw.length  ? fw.slice().sort((a,b)=>b.goals_per_game-a.goals_per_game)[0] : null;
+  const topSot     = fw.length  ? fw.slice().sort((a,b)=>b.shots_on_target_per_game-a.shots_on_target_per_game)[0] : null;
+  const topYellow  = allPlayers.length ? allPlayers.slice().sort((a,b)=>b.yellow_cards_per_game-a.yellow_cards_per_game)[0] : null;
+  const topAssist  = fw.length  ? fw.slice().sort((a,b)=>b.assists_per_game-a.assists_per_game)[0] : null;
 
-  const topScProb  = topScorer  ? calcPlayerProbs(topScorer).anyGoal.toFixed(1)   : '—';
-  const topSotProb = topSot     ? calcPlayerProbs(topSot).sot2Plus.toFixed(1)     : '—';
-  const topYcProb  = topYellow  ? calcPlayerProbs(topYellow).ycProb.toFixed(1)    : '—';
-  const topAstProb = topAssist  ? calcPlayerProbs(topAssist).astProb.toFixed(1)   : '—';
+  const topScProb  = topScorer ? calcPlayerProbs(topScorer).goalProb.toFixed(1)  : '—';
+  const topSotProb = topSot    ? calcPlayerProbs(topSot).sot2Plus.toFixed(1)     : '—';
+  const topYcProb  = topYellow ? calcPlayerProbs(topYellow).ycProb.toFixed(1)    : '—';
+  const topAstProb = topAssist ? calcPlayerProbs(topAssist).astProb.toFixed(1)   : '—';
 
   let html = `
   <div class="market-summary-box">
@@ -2048,17 +2043,17 @@ function renderPlayers(d){
   <div class="team-section">
     <div class="team-header">
       <div class="team-badge" style="background:rgba(0,232,122,.1)">🏠</div>
-      <div><div class="team-label">${d.home_team}</div><div class="team-sub">LOCAL · ${d.home_players.length} jugadores</div></div>
+      <div><div class="team-label">${d.home_team}</div><div class="team-sub">LOCAL · ${homePlayers.length} jugadores</div></div>
     </div>
-    <div class="players-grid">${d.home_players.map(renderPlayerCard).join('')}</div>
+    <div class="players-grid">${homePlayers.map(renderPlayerCard).join('')}</div>
   </div>
 
   <div class="team-section">
     <div class="team-header">
       <div class="team-badge" style="background:rgba(77,168,255,.1)">✈️</div>
-      <div><div class="team-label">${d.away_team}</div><div class="team-sub">VISITANTE · ${d.away_players.length} jugadores</div></div>
+      <div><div class="team-label">${d.away_team}</div><div class="team-sub">VISITANTE · ${awayPlayers.length} jugadores</div></div>
     </div>
-    <div class="players-grid">${d.away_players.map(renderPlayerCard).join('')}</div>
+    <div class="players-grid">${awayPlayers.map(renderPlayerCard).join('')}</div>
   </div>`;
 
   document.getElementById('players_out').innerHTML = html;
