@@ -921,7 +921,7 @@ function calcPoisson(){
   let ph=0,pd=0,pa=0,btts=0,o25=0,mat=[];
   const MAXG=6;
   for(let h=0;h<=MAXG;h++){let row=[];for(let a=0;a<=MAXG;a++){
-    const p=activeModel==='dc'?poissonDC(lh,la,h,a):poisson(lh,h)*poisson(la,a);
+    const p=activeModel==='dc'?poissonDC(lh,la,h,a,dcRho):poisson(lh,h)*poisson(la,a);
     row.push(p);if(h>a)ph+=p;else if(h===a)pd+=p;else pa+=p;if(h>0&&a>0)btts+=p;if(h+a>2.5)o25+=p;}mat.push(row);}
 
   // Tail mass beyond the displayed 0-4 grid (scores like 5+, 6+) — needed so 1X2 totals stay consistent
@@ -1435,14 +1435,22 @@ function setModel(m){
 }
 
 function dcTau(x,y,lh,la,rho){
-  if(x===0&&y===0)return 1-lh*la*rho;
-  if(x===1&&y===0)return 1+la*rho;
-  if(x===0&&y===1)return 1+lh*rho;
-  if(x===1&&y===1)return 1-rho;
+  // Scale the correction by how balanced the match is.
+  // Dixon-Coles' low-score adjustment was fitted on average fixtures; applying
+  // the full correction to a heavily mismatched game artificially inflates 1-1.
+  // balanceFactor → 1 when lh≈la (even match), shrinks toward 0 as the gap grows.
+  const ratio = Math.min(lh,la) / Math.max(lh,la,0.01);
+  const balanceFactor = Math.pow(ratio, 1.5); // steeper falloff for lopsided matches
+  const effRho = rho * balanceFactor;
+
+  if(x===0&&y===0)return 1 - lh*la*effRho;
+  if(x===1&&y===0)return 1 + la*effRho;
+  if(x===0&&y===1)return 1 + lh*effRho;
+  if(x===1&&y===1)return 1 - effRho;
   return 1;
 }
-function poissonDC(lh,la,h,a){
-  return Math.max(0,poisson(lh,h)*poisson(la,a)*dcTau(h,a,lh,la,dcRho));
+function poissonDC(lh,la,h,a,rho){
+  return Math.max(0,poisson(lh,h)*poisson(la,a)*dcTau(h,a,lh,la,rho));
 }
 
 function showModelDiff(){
@@ -1454,11 +1462,11 @@ function showModelDiff(){
   const lh=(ha+ad)/2*adv, la=(aa+hd)/2;
   let phP=0,pdP=0,paP=0,phDC=0,pdDC=0,paDC=0;
   for(let h=0;h<=8;h++)for(let a=0;a<=8;a++){
-    const pP=poisson(lh,h)*poisson(la,a), pDC=poissonDC(lh,la,h,a);
+    const pP=poisson(lh,h)*poisson(la,a), pDC=poissonDC(lh,la,h,a,dcRho);
     if(h>a){phP+=pP;phDC+=pDC;}else if(h===a){pdP+=pP;pdDC+=pDC;}else{paP+=pP;paDC+=pDC;}
   }
-  const d00=((poissonDC(lh,la,0,0)/(poisson(lh,0)*poisson(la,0))-1)*100).toFixed(1);
-  const d11=((poissonDC(lh,la,1,1)/(poisson(lh,1)*poisson(la,1))-1)*100).toFixed(1);
+  const d00=((poissonDC(lh,la,0,0,dcRho)/(poisson(lh,0)*poisson(la,0))-1)*100).toFixed(1);
+  const d11=((poissonDC(lh,la,1,1,dcRho)/(poisson(lh,1)*poisson(la,1))-1)*100).toFixed(1);
   document.getElementById('model_diff').style.display='block';
   document.getElementById('model_diff').innerHTML=
     `Corrección DC activa (ρ=${dcRho}) &nbsp;·&nbsp; `+
