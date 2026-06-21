@@ -699,13 +699,13 @@ footer a:hover{color:var(--green)}
         <div class="grid2" style="margin-bottom:1rem">
           <div class="panel" style="background:var(--bg)">
             <div class="panel-title">Local</div>
-            <div class="field"><label>Corners a favor / partido</label><input type="number" id="h_ck_for" value="5.2" step="0.1" min="0" max="15" oninput="calcCorners()"></div>
-            <div class="field"><label>Corners en contra / partido</label><input type="number" id="h_ck_ag" value="4.1" step="0.1" min="0" max="15" oninput="calcCorners()"></div>
+            <div class="field"><label>Corners a favor / partido</label><input type="number" id="h_ck_for" value="5.2" step="0.1" min="0" max="15" oninput="this.dataset.manual='1';calcCorners()"></div>
+            <div class="field"><label>Corners en contra / partido</label><input type="number" id="h_ck_ag" value="4.1" step="0.1" min="0" max="15" oninput="this.dataset.manual='1';calcCorners()"></div>
           </div>
           <div class="panel" style="background:var(--bg)">
             <div class="panel-title">Visitante</div>
-            <div class="field"><label>Corners a favor / partido</label><input type="number" id="a_ck_for" value="4.3" step="0.1" min="0" max="15" oninput="calcCorners()"></div>
-            <div class="field"><label>Corners en contra / partido</label><input type="number" id="a_ck_ag" value="5.0" step="0.1" min="0" max="15" oninput="calcCorners()"></div>
+            <div class="field"><label>Corners a favor / partido</label><input type="number" id="a_ck_for" value="4.3" step="0.1" min="0" max="15" oninput="this.dataset.manual='1';calcCorners()"></div>
+            <div class="field"><label>Corners en contra / partido</label><input type="number" id="a_ck_ag" value="5.0" step="0.1" min="0" max="15" oninput="this.dataset.manual='1';calcCorners()"></div>
           </div>
         </div>
         <div class="grid3" style="margin-bottom:1rem">
@@ -731,13 +731,13 @@ footer a:hover{color:var(--green)}
         <div class="grid2" style="margin-bottom:1rem">
           <div class="panel" style="background:var(--bg)">
             <div class="panel-title">Local</div>
-            <div class="field"><label>Remates totales / partido</label><input type="number" id="h_sh_tot" value="13.5" step="0.5" min="0" max="40" oninput="calcShots()"></div>
-            <div class="field"><label>Tiros al arco / partido</label><input type="number" id="h_sh_sot" value="4.8" step="0.1" min="0" max="20" oninput="calcShots()"></div>
+            <div class="field"><label>Remates totales / partido</label><input type="number" id="h_sh_tot" value="13.5" step="0.5" min="0" max="40" oninput="this.dataset.manual='1';calcShots()"></div>
+            <div class="field"><label>Tiros al arco / partido</label><input type="number" id="h_sh_sot" value="4.8" step="0.1" min="0" max="20" oninput="this.dataset.manual='1';calcShots()"></div>
           </div>
           <div class="panel" style="background:var(--bg)">
             <div class="panel-title">Visitante</div>
-            <div class="field"><label>Remates totales / partido</label><input type="number" id="a_sh_tot" value="10.2" step="0.5" min="0" max="40" oninput="calcShots()"></div>
-            <div class="field"><label>Tiros al arco / partido</label><input type="number" id="a_sh_sot" value="3.5" step="0.1" min="0" max="20" oninput="calcShots()"></div>
+            <div class="field"><label>Remates totales / partido</label><input type="number" id="a_sh_tot" value="10.2" step="0.5" min="0" max="40" oninput="this.dataset.manual='1';calcShots()"></div>
+            <div class="field"><label>Tiros al arco / partido</label><input type="number" id="a_sh_sot" value="3.5" step="0.1" min="0" max="20" oninput="this.dataset.manual='1';calcShots()"></div>
           </div>
         </div>
         <div class="grid3" style="margin-bottom:1rem">
@@ -763,13 +763,13 @@ footer a:hover{color:var(--green)}
         <div class="grid2" style="margin-bottom:1rem">
           <div class="panel" style="background:var(--bg)">
             <div class="panel-title">Local</div>
-            <div class="field"><label>Tarjetas amarillas / partido</label><input type="number" id="h_yc" value="1.8" step="0.1" min="0" max="8" oninput="calcCards()"></div>
-            <div class="field"><label>Tarjetas recibidas de rivales</label><input type="number" id="h_yc_ag" value="2.1" step="0.1" min="0" max="8" oninput="calcCards()"></div>
+            <div class="field"><label>Tarjetas amarillas / partido</label><input type="number" id="h_yc" value="1.8" step="0.1" min="0" max="8" oninput="this.dataset.manual='1';calcCards()"></div>
+            <div class="field"><label>Tarjetas recibidas de rivales</label><input type="number" id="h_yc_ag" value="2.1" step="0.1" min="0" max="8" oninput="this.dataset.manual='1';calcCards()"></div>
           </div>
           <div class="panel" style="background:var(--bg)">
             <div class="panel-title">Visitante</div>
-            <div class="field"><label>Tarjetas amarillas / partido</label><input type="number" id="a_yc" value="2.2" step="0.1" min="0" max="8" oninput="calcCards()"></div>
-            <div class="field"><label>Tarjetas recibidas de rivales</label><input type="number" id="a_yc_ag" value="1.9" step="0.1" min="0" max="8" oninput="calcCards()"></div>
+            <div class="field"><label>Tarjetas amarillas / partido</label><input type="number" id="a_yc" value="2.2" step="0.1" min="0" max="8" oninput="this.dataset.manual='1';calcCards()"></div>
+            <div class="field"><label>Tarjetas recibidas de rivales</label><input type="number" id="a_yc_ag" value="1.9" step="0.1" min="0" max="8" oninput="this.dataset.manual='1';calcCards()"></div>
           </div>
         </div>
         <div class="panel" style="background:var(--bg);margin-bottom:1rem">
@@ -993,6 +993,19 @@ function calcPoisson(){
 
   checkContradictions();
   pDone=true;
+
+  // Auto-redistribute corners/cards/shots proportionally to attack strength when a
+  // competition preset is active AND the user hasn't manually edited those fields.
+  if(activePreset){
+    const marketFields=['h_ck_for','h_ck_ag','a_ck_for','a_ck_ag','h_yc','h_yc_ag','a_yc','a_yc_ag','h_sh_tot','a_sh_tot','h_sh_sot','a_sh_sot'];
+    const anyManual=marketFields.some(id=>document.getElementById(id)?.dataset.manual);
+    if(!anyManual){
+      redistributeMarketsByStrength();
+      calcCorners();
+      calcCards();
+      calcShots();
+    }
+  }
 }
 
 /* ══ XG ══ */
@@ -1379,20 +1392,60 @@ function quickQ(q){document.getElementById('chat_input').value=q;sendChat();}
 
 /* ══ COMPETITION PRESETS ══ */
 const PRESETS = {
-  wc:         { name:'FIFA Mundial 2026',        adv:1.0,  goals:2.48, corners:9.8,  cards:3.2, neutral:true,  rho:-0.13 },
-  ucl:        { name:'UEFA Champions League',    adv:1.1,  goals:2.71, corners:10.1, cards:2.8, neutral:false, rho:-0.12 },
-  epl:        { name:'Premier League',           adv:1.15, goals:2.82, corners:10.4, cards:3.1, neutral:false, rho:-0.10 },
-  laliga:     { name:'La Liga',                  adv:1.18, goals:2.65, corners:9.6,  cards:4.2, neutral:false, rho:-0.11 },
-  seriea:     { name:'Serie A',                  adv:1.20, goals:2.60, corners:9.2,  cards:4.5, neutral:false, rho:-0.13 },
-  bundesliga: { name:'Bundesliga',               adv:1.17, goals:3.05, corners:10.8, cards:3.0, neutral:false, rho:-0.09 },
-  ligue1:     { name:'Ligue 1',                  adv:1.22, goals:2.55, corners:9.4,  cards:3.8, neutral:false, rho:-0.12 },
-  ligamx:     { name:'Liga MX',                  adv:1.28, goals:2.70, corners:9.0,  cards:3.5, neutral:false, rho:-0.11 },
-  conmebol:   { name:'CONMEBOL Libertadores',    adv:1.25, goals:2.40, corners:8.8,  cards:4.0, neutral:false, rho:-0.13 },
-  mls:        { name:'MLS',                      adv:1.15, goals:2.85, corners:9.5,  cards:3.0, neutral:false, rho:-0.10 },
+  wc:         { name:'FIFA Mundial 2026',        adv:1.0,  goals:2.48, corners:9.8,  cards:3.2, neutral:true,  rho:-0.13, shots:23.5, sot:8.6  },
+  ucl:        { name:'UEFA Champions League',    adv:1.1,  goals:2.71, corners:10.1, cards:2.8, neutral:false, rho:-0.12, shots:24.8, sot:9.1  },
+  epl:        { name:'Premier League',           adv:1.15, goals:2.82, corners:10.4, cards:3.1, neutral:false, rho:-0.10, shots:25.6, sot:9.4  },
+  laliga:     { name:'La Liga',                  adv:1.18, goals:2.65, corners:9.6,  cards:4.2, neutral:false, rho:-0.11, shots:23.8, sot:8.5  },
+  seriea:     { name:'Serie A',                  adv:1.20, goals:2.60, corners:9.2,  cards:4.5, neutral:false, rho:-0.13, shots:24.2, sot:8.3  },
+  bundesliga: { name:'Bundesliga',               adv:1.17, goals:3.05, corners:10.8, cards:3.0, neutral:false, rho:-0.09, shots:26.4, sot:9.8  },
+  ligue1:     { name:'Ligue 1',                  adv:1.22, goals:2.55, corners:9.4,  cards:3.8, neutral:false, rho:-0.12, shots:23.0, sot:8.0  },
+  ligamx:     { name:'Liga MX',                  adv:1.28, goals:2.70, corners:9.0,  cards:3.5, neutral:false, rho:-0.11, shots:22.5, sot:8.2  },
+  conmebol:   { name:'CONMEBOL Libertadores',    adv:1.25, goals:2.40, corners:8.8,  cards:4.0, neutral:false, rho:-0.13, shots:21.8, sot:7.6  },
+  mls:        { name:'MLS',                      adv:1.15, goals:2.85, corners:9.5,  cards:3.0, neutral:false, rho:-0.10, shots:24.5, sot:8.8  },
 };
 let activePreset=null;
 let activeModel='poisson';
 let dcRho=-0.11;
+
+/* ── Dynamically redistribute corners/cards/shots by relative attack strength ── */
+function redistributeMarketsByStrength(){
+  if(!activePreset)return; // only auto-redistribute when a competition preset is active
+  const p=PRESETS[activePreset];
+  const ha=+document.getElementById('h_att').value||1.4;
+  const aa=+document.getElementById('a_att').value||1.2;
+  const totalAtk=ha+aa;
+  let homeAtkShare = totalAtk>0 ? ha/totalAtk : 0.5;
+  homeAtkShare = Math.max(0.30, Math.min(0.70, homeAtkShare));
+  const homeFieldBias = p.neutral ? 0 : 0.04;
+  const hCkShare = Math.max(0.30, Math.min(0.72, homeAtkShare + homeFieldBias));
+  const hCkFor=+(p.corners*hCkShare).toFixed(1);
+  const aCkFor=+(p.corners*(1-hCkShare)).toFixed(1);
+  document.getElementById('h_ck_for').value=hCkFor;
+  document.getElementById('h_ck_ag').value =aCkFor;
+  document.getElementById('a_ck_for').value=aCkFor;
+  document.getElementById('a_ck_ag').value =hCkFor;
+  let homeCardShare = totalAtk>0 ? aa/totalAtk : 0.5;
+  homeCardShare = Math.max(0.35, Math.min(0.65, homeCardShare));
+  const hYc=+(p.cards*homeCardShare).toFixed(1);
+  const aYc=+(p.cards*(1-homeCardShare)).toFixed(1);
+  document.getElementById('h_yc').value   =hYc;
+  document.getElementById('h_yc_ag').value=aYc;
+  document.getElementById('a_yc').value   =aYc;
+  document.getElementById('a_yc_ag').value=hYc;
+
+  // Shots: more attacking teams generate proportionally more shots & shots on target
+  if(p.shots&&p.sot){
+    const hShotShare = hCkShare; // same attack-driven share as corners
+    const hShTot=+(p.shots*hShotShare).toFixed(1);
+    const aShTot=+(p.shots*(1-hShotShare)).toFixed(1);
+    const hShSot=+(p.sot*hShotShare).toFixed(1);
+    const aShSot=+(p.sot*(1-hShotShare)).toFixed(1);
+    document.getElementById('h_sh_tot').value=hShTot;
+    document.getElementById('a_sh_tot').value=aShTot;
+    document.getElementById('h_sh_sot').value=hShSot;
+    document.getElementById('a_sh_sot').value=aShSot;
+  }
+}
 
 function applyPreset(key){
   const p=PRESETS[key]; if(!p)return;
@@ -1409,20 +1462,20 @@ function applyPreset(key){
   document.getElementById('pd_corners').textContent=p.corners.toFixed(1)+'/partido';
   document.getElementById('pd_cards').textContent  =p.cards.toFixed(1)+'/partido';
   document.getElementById('pd_neutral').textContent=p.neutral?'Sí (campo neutral)':'No';
-  const hCkFor=+(p.corners*0.54).toFixed(1), aCkFor=+(p.corners*0.46).toFixed(1);
-  document.getElementById('h_ck_for').value=hCkFor;
-  document.getElementById('h_ck_ag').value =aCkFor;
-  document.getElementById('a_ck_for').value=aCkFor;
-  document.getElementById('a_ck_ag').value =hCkFor;
-  const hYc=+(p.cards*0.47).toFixed(1), aYc=+(p.cards*0.53).toFixed(1);
-  document.getElementById('h_yc').value   =hYc;
-  document.getElementById('h_yc_ag').value=aYc;
-  document.getElementById('a_yc').value   =aYc;
-  document.getElementById('a_yc_ag').value=hYc;
+
+  // Clear manual-override flags on market fields so the new preset's dynamic
+  // distribution takes effect immediately instead of being blocked by stale edits.
+  ['h_ck_for','h_ck_ag','a_ck_for','a_ck_ag','h_yc','h_yc_ag','a_yc','a_yc_ag','h_sh_tot','a_sh_tot','h_sh_sot','a_sh_sot'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)delete el.dataset.manual;
+  });
+
+  redistributeMarketsByStrength();
+
   const isCup=(key==='wc'||key==='ucl'||key==='conmebol')?1:0;
   document.getElementById('is_cup').value=isCup;
   document.getElementById('cup_v').textContent=isCup?'Sí':'No';
-  calcPoisson(); calcCorners(); calcCards();
+  calcPoisson(); calcCorners(); calcCards(); calcShots();
   if(activeModel==='dc')showModelDiff();
 }
 
@@ -1829,6 +1882,11 @@ function showFillPreview(d){
 function applyFillData(){
   const d=lastFillData;
   if(!d)return;
+  // Clear manual-override flags everywhere so this fresh match data fully applies
+  ['my_prob','bk_prob','h_ck_for','h_ck_ag','a_ck_for','a_ck_ag','h_yc','h_yc_ag','a_yc','a_yc_ag','h_sh_tot','a_sh_tot','h_sh_sot','a_sh_sot'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)delete el.dataset.manual;
+  });
   // Poisson
   document.getElementById('h_att').value=d.home_goals_scored;
   document.getElementById('h_def').value=d.home_goals_conceded;
