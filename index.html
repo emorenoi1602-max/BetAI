@@ -386,6 +386,7 @@ footer a:hover{color:var(--green)}
         </div>
         <div id="model_diff" style="display:none;margin-top:.75rem;padding:.6rem .9rem;background:var(--bg);border-radius:var(--radius);font-size:.78rem;color:var(--text2);font-family:var(--mono)"></div>
         <div id="fusion_indicator"></div>
+        <div id="lambda_gap_warning" style="display:none"></div>
       </div>
       <div class="grid2">
         <div class="panel">
@@ -914,6 +915,22 @@ function calcPoisson(){
     } else {
       fuseEl.style.cssText='display:block;padding:.5rem .9rem;border-radius:var(--radius);font-family:var(--mono);font-size:.72rem;background:var(--bg);border:1px solid var(--border);color:var(--text3);margin-top:.75rem';
       fuseEl.innerHTML=`Modo Poisson puro — Ingresa datos xG en tab <b>2 xG & FORMA</b> para activar fusión xG+Poisson`;
+    }
+  }
+
+  // ── Lambda similarity warning: flags when both teams have near-identical
+  // expected goals, which is the root cause of an unrealistic 1-1 peak when
+  // the underlying input data (goals scored/conceded) wasn't differentiated. ──
+  const lambdaGapWarn=document.getElementById('lambda_gap_warning');
+  if(lambdaGapWarn){
+    const gap=Math.abs(lh-la);
+    const avgL=(lh+la)/2;
+    const relGap=avgL>0?gap/avgL:0;
+    if(relGap<0.18&&avgL>0.3){
+      lambdaGapWarn.style.cssText='display:block;margin-top:.5rem;padding:.55rem .85rem;background:var(--amber-dim);border:1px solid rgba(255,181,71,.3);border-radius:var(--radius);font-size:.74rem;color:var(--amber);font-family:var(--mono)';
+      lambdaGapWarn.innerHTML=`⚠️ Las lambdas de ambos equipos son casi idénticas (λ local: ${lh.toFixed(2)}, λ visitante: ${la.toFixed(2)}). Si crees que un equipo es claramente más fuerte, revisa los datos de goles marcados/recibidos — pueden estar promediados de forma genérica en vez de reflejar la diferencia real de nivel.`;
+    } else {
+      lambdaGapWarn.style.display='none';
     }
   }
 
@@ -1735,47 +1752,55 @@ async function runAutofill(){
   btn.disabled=true;btn.style.opacity='.6';
   document.getElementById('autofill_preview').style.display='none';
   setFillStatus('Buscando datos del partido en tiempo real...','loading',true);
-  const prompt=`Eres un experto en estadísticas de fútbol. El usuario quiere analizar el partido: "${q}".
+  const prompt=`Eres un analista de datos de fútbol profesional. Analiza el partido: "${q}".
 
-Busca y proporciona los siguientes datos estadísticos reales y actuales de este partido. Si no tienes datos exactos, usa estimaciones razonables basadas en el rendimiento conocido de los equipos en la temporada actual.
+PASO 1 — Busca en internet el ranking FIFA, posición en tabla, y forma reciente de AMBOS equipos.
+PASO 2 — Evalúa la diferencia real de nivel entre ellos. Si uno es claramente superior (ej. una potencia mundial vs una selección débil, o un líder de tabla vs un colista), los números DEBEN reflejar esa brecha de forma marcada — no los redondees hacia el promedio.
 
-Responde ÚNICAMENTE con un objeto JSON válido con esta estructura exacta, sin texto adicional, sin markdown, sin explicaciones:
+REGLA CRÍTICA: Nunca generes valores genéricos o "promedio de liga" para ambos equipos. Cada estadística debe basarse en el nivel REAL de cada equipo específico:
+- Un equipo dominante (top mundial, líder de grupo) típicamente marca 2.0-3.5 goles/partido y recibe 0.4-1.0
+- Un equipo débil (ranking bajo, colista) típicamente marca 0.4-1.0 goles/partido y recibe 1.5-2.8
+- Solo usa valores parecidos entre ambos equipos si realmente están en niveles similares
+
+Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones. NO copies los números de este ejemplo — son solo para mostrar el formato y las claves requeridas:
 {
-  "home_team": "Nombre del equipo local",
-  "away_team": "Nombre del equipo visitante",
-  "competition": "Nombre de la competición",
-  "match_date": "Fecha estimada si la conoces, sino null",
-  "home_goals_scored": 1.8,
-  "home_goals_conceded": 1.1,
-  "away_goals_scored": 1.3,
-  "away_goals_conceded": 1.5,
+  "home_team": "string",
+  "away_team": "string",
+  "competition": "string",
+  "match_date": "string o null",
+  "fifa_rank_home": 8,
+  "fifa_rank_away": 65,
+  "home_goals_scored": 0,
+  "home_goals_conceded": 0,
+  "away_goals_scored": 0,
+  "away_goals_conceded": 0,
   "home_advantage": 1.2,
-  "home_xg_for": 1.9,
-  "home_xg_against": 1.0,
-  "away_xg_for": 1.2,
-  "away_xg_against": 1.6,
+  "home_xg_for": 0,
+  "home_xg_against": 0,
+  "away_xg_for": 0,
+  "away_xg_against": 0,
   "home_last6": [3,3,1,3,0,3],
   "away_last6": [1,0,3,1,3,0],
   "home_injuries": 0,
   "away_injuries": 1,
   "home_motivation": 4,
   "away_motivation": 4,
-  "home_corners_for": 5.5,
-  "home_corners_ag": 4.2,
-  "away_corners_for": 4.8,
-  "away_corners_ag": 5.1,
-  "home_shots_total": 14.0,
-  "home_shots_on_target": 5.0,
-  "away_shots_total": 10.5,
-  "away_shots_on_target": 3.8,
-  "home_yellow_cards": 1.8,
-  "home_yellow_cards_ag": 2.0,
-  "away_yellow_cards": 2.2,
-  "away_yellow_cards_ag": 1.9,
-  "notes": "Nota breve sobre el contexto del partido en 1 línea"
+  "home_corners_for": 0,
+  "home_corners_ag": 0,
+  "away_corners_for": 0,
+  "away_corners_ag": 0,
+  "home_shots_total": 0,
+  "home_shots_on_target": 0,
+  "away_shots_total": 0,
+  "away_shots_on_target": 0,
+  "home_yellow_cards": 0,
+  "home_yellow_cards_ag": 0,
+  "away_yellow_cards": 0,
+  "away_yellow_cards_ag": 0,
+  "notes": "Nota breve explicando la diferencia de nivel entre los equipos"
 }
 
-Los valores home_last6 y away_last6 son arrays de 6 números donde 3=victoria, 1=empate, 0=derrota, en orden del más reciente al más antiguo.`;
+Los valores home_last6 y away_last6 son arrays de 6 números donde 3=victoria, 1=empate, 0=derrota, en orden del más reciente al más antiguo. Todos los campos numéricos en 0 en el ejemplo deben reemplazarse con tu estimación real basada en la búsqueda — nunca los dejes en 0.`;
 
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -1783,7 +1808,7 @@ Los valores home_last6 y away_last6 son arrays de 6 números donde 3=victoria, 1
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-sonnet-4-6',
-        max_tokens:800,
+        max_tokens:1200,
         tools:[{type:'web_search_20250305',name:'web_search'}],
         messages:[{role:'user',content:prompt}]
       })
@@ -1806,7 +1831,7 @@ Los valores home_last6 y away_last6 son arrays de 6 números donde 3=victoria, 1
         headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
         body:JSON.stringify({
           model:'claude-sonnet-4-6',
-          max_tokens:800,
+          max_tokens:1200,
           messages:[
             {role:'user',content:prompt},
             {role:'assistant',content:data.content},
@@ -1835,8 +1860,32 @@ function showFillPreview(d){
   const prev=document.getElementById('autofill_preview');
   const res=r=>[3,1,0][r]===undefined?r:['G','E','P'][[3,1,0].indexOf(r)];
   const fmtLast6=arr=>arr.map(v=>v===3?'G':v===1?'E':'P').join(' · ');
+
+  // ── Sanity check: warn if both teams look suspiciously identical ──
+  // (a common AI failure mode is anchoring to example/default numbers instead of differentiating)
+  const goalDiff = Math.abs((d.home_goals_scored||0) - (d.away_goals_scored||0));
+  const concededDiff = Math.abs((d.home_goals_conceded||0) - (d.away_goals_conceded||0));
+  const rankDiff = (d.fifa_rank_home && d.fifa_rank_away) ? Math.abs(d.fifa_rank_home - d.fifa_rank_away) : null;
+  const looksGeneric = goalDiff < 0.25 && concededDiff < 0.25;
+  const bigRankGapButSimilarStats = rankDiff && rankDiff > 30 && looksGeneric;
+
+  let warningHtml = '';
+  if (bigRankGapButSimilarStats || looksGeneric) {
+    warningHtml = `<div style="padding:.65rem .9rem;background:var(--amber-dim);border:1px solid rgba(255,181,71,.3);border-radius:var(--radius);margin-bottom:.75rem;font-size:.78rem;color:var(--amber)">
+      ⚠️ Los datos de ambos equipos lucen muy parecidos${rankDiff?` a pesar de una diferencia de ranking FIFA de ${rankDiff} posiciones`:''}. Esto puede pasar cuando la IA no encuentra datos específicos. Revisa los números abajo y ajústalos manualmente si conoces la diferencia real de nivel entre los equipos.
+    </div>`;
+  }
+
+  const rankHtml = (d.fifa_rank_home || d.fifa_rank_away) ? `
+    <div style="display:flex;gap:1.5rem;margin-bottom:.75rem;font-family:var(--mono);font-size:.78rem;color:var(--text2)">
+      <span>🏠 Ranking FIFA: <b style="color:var(--green)">#${d.fifa_rank_home||'?'}</b></span>
+      <span>✈️ Ranking FIFA: <b style="color:var(--blue)">#${d.fifa_rank_away||'?'}</b></span>
+    </div>` : '';
+
   prev.style.display='block';
   prev.innerHTML=`
+    ${warningHtml}
+    ${rankHtml}
     <div class="fill-grid">
       <div class="fill-card">
         <div class="fill-card-title">🏠 ${d.home_team} (Local)</div>
