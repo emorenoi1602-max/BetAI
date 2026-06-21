@@ -413,7 +413,13 @@ footer a:hover{color:var(--green)}
       </div>
       <div class="panel">
         <div class="panel-title">Matriz de marcadores más probables</div>
-        <div class="matrix-wrap"><div id="matrix_out"></div></div>
+        <div class="grid2" style="align-items:start">
+          <div class="matrix-wrap"><div id="matrix_out"></div></div>
+          <div>
+            <div style="font-family:var(--mono);font-size:.68rem;color:var(--text3);letter-spacing:.06em;margin-bottom:.5rem;text-transform:uppercase">Top 5 marcadores exactos</div>
+            <div id="top5_scores"></div>
+          </div>
+        </div>
       </div>
       <div class="panel">
         <div class="row-item"><span class="key">xG esperados — Local</span><span class="val" id="xg_hp">—</span></div>
@@ -910,10 +916,16 @@ function calcPoisson(){
     }
   }
 
+  // ── Build full matrix (0-6 x 0-6 = 49 cells) with proper probability accounting ──
   let ph=0,pd=0,pa=0,btts=0,o25=0,mat=[];
-  for(let h=0;h<=6;h++){let row=[];for(let a=0;a<=6;a++){
+  const MAXG=6;
+  for(let h=0;h<=MAXG;h++){let row=[];for(let a=0;a<=MAXG;a++){
     const p=activeModel==='dc'?poissonDC(lh,la,h,a):poisson(lh,h)*poisson(la,a);
     row.push(p);if(h>a)ph+=p;else if(h===a)pd+=p;else pa+=p;if(h>0&&a>0)btts+=p;if(h+a>2.5)o25+=p;}mat.push(row);}
+
+  // Tail mass beyond the displayed 0-4 grid (scores like 5+, 6+) — needed so 1X2 totals stay consistent
+  const coveredMass = mat.slice(0,5).reduce((s,row)=>s+row.slice(0,5).reduce((s2,v)=>s2+v,0),0);
+  const tailMass = Math.max(0, 1 - mat.reduce((s,row)=>s+row.reduce((s2,v)=>s2+v,0),0));
 
   poissonHomePct=ph*100; poissonDrawPct=pd*100; poissonAwayPct=pa*100;
   document.getElementById('p_home').textContent=poissonHomePct.toFixed(1)+'%';
@@ -922,23 +934,54 @@ function calcPoisson(){
   document.getElementById('btts_p').textContent=(btts*100).toFixed(1)+'%';
   document.getElementById('o25_p').textContent=(o25*100).toFixed(1)+'%';
 
-  // Matrix
+  // ── Find the single most probable scoreline (search full 0-6 matrix, not just the displayed 5x5) ──
+  let peakH=0, peakA=0, peakP=0;
+  for(let h=0;h<=MAXG;h++)for(let a=0;a<=MAXG;a++){
+    if(mat[h][a]>peakP){peakP=mat[h][a];peakH=h;peakA=a;}
+  }
+  // Top 5 scorelines ranked
+  let allScores=[];
+  for(let h=0;h<=MAXG;h++)for(let a=0;a<=MAXG;a++)allScores.push({h,a,p:mat[h][a]});
+  allScores.sort((x,y)=>y.p-x.p);
+  const top5=allScores.slice(0,5);
+
+  // ── Render matrix: color scale relative to the ACTUAL peak cell, not an arbitrary constant ──
   const mc=document.getElementById('matrix_out');
-  let html=`<div style="display:grid;grid-template-columns:24px repeat(5,1fr);gap:2px">`;
+  let html=`<div style="display:grid;grid-template-columns:28px repeat(5,1fr);gap:2px">`;
   html+=`<div class="m-label">L╲V</div>`;
   for(let a=0;a<=4;a++)html+=`<div class="m-label">${a}</div>`;
   for(let h=0;h<=4;h++){
     html+=`<div class="m-label">${h}</div>`;
     for(let a=0;a<=4;a++){
       const pct=mat[h][a]*100;
-      const t=Math.min(pct/8,1);
-      const bg=`rgba(0,232,122,${t*0.7+0.05})`;
-      const fc=t>0.5?'#000':'#8892a4';
-      html+=`<div class="m-cell" style="background:${bg};color:${fc}">${pct.toFixed(1)}%</div>`;
+      const t=peakP>0?Math.min(mat[h][a]/peakP,1):0; // scale relative to true peak
+      const isPeak=(h===peakH&&a===peakA);
+      const bg=`rgba(0,232,122,${(t*0.75+0.05).toFixed(2)})`;
+      const fc=t>0.45?'#000':'#8892a4';
+      const border=isPeak?'border:1.5px solid #00e87a;':'';
+      const fw=isPeak?'font-weight:700;':'';
+      html+=`<div class="m-cell" style="background:${bg};color:${fc};${border}${fw}" title="${h}-${a}: ${pct.toFixed(1)}%">${pct.toFixed(1)}%</div>`;
     }
   }
   html+='</div>';
+
+  // Tail mass note (scores outside the 0-4 grid, e.g. 5-0, 0-6, etc.)
+  if(tailMass*100>1.5){
+    html+=`<div style="margin-top:.5rem;font-family:var(--mono);font-size:.68rem;color:var(--text3)">+ ${(tailMass*100).toFixed(1)}% en marcadores fuera de la cuadrícula (5+ goles)</div>`;
+  }
   mc.innerHTML=html;
+
+  // ── Top 5 scorelines panel ──
+  const top5El=document.getElementById('top5_scores');
+  if(top5El){
+    top5El.innerHTML=top5.map((s,i)=>{
+      const isFirst=i===0;
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.4rem .7rem;background:${isFirst?'var(--green-dim)':'var(--bg)'};border:1px solid ${isFirst?'rgba(0,232,122,.3)':'var(--border)'};border-radius:6px;margin-bottom:4px">
+        <span style="font-family:var(--display);font-weight:${isFirst?700:500};font-size:${isFirst?'1rem':'.85rem'};color:${isFirst?'var(--green)':'var(--text)'}">${isFirst?'★ ':''}${s.h} - ${s.a}</span>
+        <span style="font-family:var(--mono);font-size:.8rem;color:${isFirst?'var(--green)':'var(--text2)'}">${(s.p*100).toFixed(1)}%</span>
+      </div>`;
+    }).join('');
+  }
 
   // AUTO-SYNC best prob → Value Betting & Kelly (only if not manually overridden)
   const bestProb=Math.max(ph,pd,pa)*100;
