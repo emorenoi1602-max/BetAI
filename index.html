@@ -636,10 +636,11 @@ footer a:hover{color:var(--green)}
         <div class="field">
           <label>Tu API Key de Anthropic (Claude)</label>
           <div style="display:flex;gap:.5rem">
-            <input type="password" id="api_key" placeholder="sk-ant-..." style="flex:1">
+            <input type="password" id="api_key" placeholder="sk-ant-..." style="flex:1" oninput="onKeyInput()">
             <button onclick="testKey()" style="padding:.6rem 1rem;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:.75rem;cursor:pointer;white-space:nowrap" id="key_btn">Verificar</button>
+            <button onclick="clearKey()" title="Olvidar API Key de este dispositivo" style="padding:.6rem .8rem;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text3);font-size:.85rem;cursor:pointer" id="key_clear_btn">🗑️</button>
           </div>
-          <span style="font-size:.72rem;color:var(--text3);margin-top:.3rem;display:block">Obtén tu key en <a href="https://console.anthropic.com" target="_blank" style="color:var(--green)">console.anthropic.com</a> · No se almacena en ningún servidor</span>
+          <span style="font-size:.72rem;color:var(--text3);margin-top:.3rem;display:block">Obtén tu key en <a href="https://console.anthropic.com" target="_blank" style="color:var(--green)">console.anthropic.com</a> · Se guarda solo en este dispositivo, nunca en un servidor</span>
         </div>
         <div id="key_status" style="display:none;padding:.5rem .75rem;border-radius:var(--radius);font-family:var(--mono);font-size:.75rem;margin-top:.25rem"></div>
       </div>
@@ -1202,8 +1203,33 @@ document.getElementById('reportModal').addEventListener('click',e=>{if(e.target=
 
 /* ══ AI MODULE ══ */
 let chatHistory=[];
+const API_KEY_STORAGE='statbet_api_key';
 
 function getKey(){return document.getElementById('api_key').value.trim();}
+
+function loadStoredKey(){
+  try{
+    const saved=localStorage.getItem(API_KEY_STORAGE);
+    if(saved){
+      document.getElementById('api_key').value=saved;
+      setKeyStatus('✓ API Key cargada de este dispositivo — lista para usar','ok');
+    }
+  }catch(e){}
+}
+
+function onKeyInput(){
+  const key=getKey();
+  if(key.length>10){
+    try{localStorage.setItem(API_KEY_STORAGE,key);}catch(e){}
+  }
+}
+
+function clearKey(){
+  if(!confirm('¿Olvidar la API Key guardada en este dispositivo? Tendrás que volver a pegarla la próxima vez.'))return;
+  try{localStorage.removeItem(API_KEY_STORAGE);}catch(e){}
+  document.getElementById('api_key').value='';
+  setKeyStatus('🗑️ API Key olvidada de este dispositivo','error');
+}
 
 function getMatchContext(){
   const h=document.getElementById('p_home').textContent||'N/A';
@@ -1241,6 +1267,8 @@ async function callClaude(messages){
     })
   });
   if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.statusText);}
+  // Successful call — persist key for next time
+  try{localStorage.setItem(API_KEY_STORAGE,key);}catch(e){}
   const data=await resp.json();
   return data.content[0].text;
 }
@@ -1253,7 +1281,8 @@ async function testKey(){
   setKeyStatus('','');
   try{
     await callClaude([{role:'user',content:'Responde solo: OK'}]);
-    setKeyStatus('✓ API Key válida — IA lista','ok');
+    try{localStorage.setItem(API_KEY_STORAGE,key);}catch(e){}
+    setKeyStatus('✓ API Key válida y guardada en este dispositivo — no la pedirá de nuevo','ok');
   }catch(e){
     setKeyStatus('✗ Error: '+e.message,'error');
   }finally{btn.textContent='Verificar';btn.disabled=false;}
@@ -1640,6 +1669,7 @@ async function runAutofill(){
   if(!q){setFillStatus('Escribe el nombre del partido primero.','error');return;}
   const key=getKey();
   if(!key){setFillStatus('Necesitas ingresar tu API Key en el módulo ✦ ANÁLISIS IA primero.','error');return;}
+  try{localStorage.setItem(API_KEY_STORAGE,key);}catch(e){}
   const btn=document.getElementById('autofill_btn');
   btn.disabled=true;btn.style.opacity='.6';
   document.getElementById('autofill_preview').style.display='none';
@@ -1877,6 +1907,7 @@ async function searchPlayers(){
   if(!q){setPStatus('Escribe el nombre del partido primero.','error');return;}
   const key=getKey();
   if(!key){setPStatus('Ingresa tu API Key en el módulo ✦ ANÁLISIS IA primero.','error');return;}
+  try{localStorage.setItem(API_KEY_STORAGE,key);}catch(e){}
   const btn=document.getElementById('player_search_btn');
   btn.disabled=true;btn.style.opacity='.6';
   document.getElementById('players_out').innerHTML='';
@@ -2235,7 +2266,7 @@ function renderTracker(){
 }
 
 /* ══ INIT ══ */
-calcPoisson();calcXG();calcValue();calcKelly();calcCorners();calcShots();calcCards();renderTracker();
+calcPoisson();calcXG();calcValue();calcKelly();calcCorners();calcShots();calcCards();renderTracker();loadStoredKey();
 </script>
 </body>
 </html>
