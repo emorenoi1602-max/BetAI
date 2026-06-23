@@ -333,6 +333,7 @@ footer a:hover{color:var(--green)}
       <span style="font-family:var(--mono);font-size:.72rem;color:var(--text3);letter-spacing:.08em">COMPETICIÓN</span>
       <span id="preset_name" style="font-family:var(--display);font-size:.88rem;font-weight:700;color:var(--green)">Selecciona una competición para calibrar el modelo</span>
     </div>
+    <p style="font-size:.72rem;color:var(--text3);margin-bottom:.6rem">⚠️ Esto solo ajusta la ventaja de local, corners y tarjetas según el promedio de la liga. Para los goles esperados de cada equipo usa el buscador con IA de arriba.</p>
     <div class="preset-grid" id="preset_grid">
       <button class="preset-btn" onclick="applyPreset('wc')">🌍 Mundial 2026</button>
       <button class="preset-btn" onclick="applyPreset('ucl')">⭐ Champions</button>
@@ -371,6 +372,8 @@ footer a:hover{color:var(--green)}
 
     <!-- ══ TAB 1: POISSON ══ -->
     <div id="tab-poisson" class="tab-content active">
+
+      <div id="factory_default_warning" style="display:none"></div>
 
       <!-- Model selector -->
       <div class="panel" style="background:linear-gradient(135deg,rgba(0,232,122,.04),transparent);border-color:rgba(0,232,122,.2);margin-bottom:1.25rem">
@@ -862,6 +865,8 @@ footer a:hover{color:var(--green)}
 <script>
 /* ══ STATE ══ */
 let pDone=false,xDone=false,vDone=false,kDone=false;
+let realMatchDataLoaded=false; // true only after autofill successfully applies real team data
+let loadedMatchName='';
 let gEV=0,gEdge=0,gBet=0,gBankroll=1000;
 let growthInst=null;
 
@@ -889,6 +894,21 @@ function calcPoisson(){
   const aa=+document.getElementById('a_att').value||1.2;
   const ad=+document.getElementById('a_def').value||1.3;
   const adv=+document.getElementById('h_adv').value||1.2;
+
+  // ── Detect untouched factory-default values (1.6/1.0/1.2/1.3) ──
+  // If a competition preset was applied but the team attack/defense numbers
+  // were never replaced with real data (e.g. autofill wasn't used or failed),
+  // the matrix silently runs on generic placeholder numbers. Flag this clearly.
+  const isFactoryDefault = Math.abs(ha-1.6)<0.01 && Math.abs(hd-1.0)<0.01 && Math.abs(aa-1.2)<0.01 && Math.abs(ad-1.3)<0.01;
+  const defaultWarnEl=document.getElementById('factory_default_warning');
+  if(defaultWarnEl){
+    if(isFactoryDefault && !realMatchDataLoaded){
+      defaultWarnEl.style.cssText='display:block;margin-bottom:.75rem;padding:.7rem 1rem;background:var(--red-dim);border:1px solid rgba(255,77,109,.35);border-radius:var(--radius);font-size:.8rem;color:var(--red)';
+      defaultWarnEl.innerHTML=`🔴 <b>Estos son los valores de fábrica (genéricos), no datos de un partido real.</b> Usa el buscador con IA arriba (escribe el partido y pulsa "Buscar y rellenar") o ingresa manualmente los goles marcados/recibidos de ambos equipos. Aplicar solo una competición (liga/Mundial) NO carga estos números — solo ajusta la ventaja de local y corners/tarjetas.`;
+    } else {
+      defaultWarnEl.style.display='none';
+    }
+  }
 
   // Base Poisson lambdas
   const lhBase=(ha+ad)/2*adv;
@@ -1931,6 +1951,8 @@ function showFillPreview(d){
 function applyFillData(){
   const d=lastFillData;
   if(!d)return;
+  realMatchDataLoaded=true;
+  loadedMatchName=`${d.home_team} vs ${d.away_team}`;
   // Clear manual-override flags everywhere so this fresh match data fully applies
   ['my_prob','bk_prob','h_ck_for','h_ck_ag','a_ck_for','a_ck_ag','h_yc','h_yc_ag','a_yc','a_yc_ag','h_sh_tot','a_sh_tot','h_sh_sot','a_sh_sot'].forEach(id=>{
     const el=document.getElementById(id);
